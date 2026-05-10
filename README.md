@@ -63,7 +63,44 @@ npm run dev
 
 ---
 
+## 📥 การ Clone โปรเจค (Cloning)
+
+สำหรับการทำงานร่วมกัน โปรดใช้คำสั่งดังนี้เพื่อดึงโปรเจคไปยังเครื่องของคุณ:
+
+**1. Clone โปรเจค:**
+```bash
+git clone https://github.com/Momikung/Project-DB.git
+cd Project-DB
+```
+
+**2. การสร้าง Branch สำหรับงานใหม่:**
+ห้ามแก้โค้ดบน branch `main` โดยตรง ให้สร้าง branch ใหม่เสมอ:
+```bash
+git checkout -b feature/your-feature-name
+```
+
+---
+
+## 🔄 กฎการจัดการ Branch และการ Merge (Merge Rules)
+
+เพื่อให้โค้ดหลัก (`main`) ไม่พังและทำงานได้ตลอดเวลา โปรดทำตามกฎดังนี้:
+
+1.  **ห้าม Push ตรงเข้า Main**: ทุกการเปลี่ยนแปลงต้องทำผ่าน Branch ของตัวเองเท่านั้น
+2.  **เปิด Pull Request (PR)**: เมื่อทำ Feature เสร็จแล้ว ให้เปิด PR บน GitHub เพื่อให้คนในทีมช่วยตรวจ (Code Review)
+3.  **Merge Rules**: 
+    - ต้องไม่มีข้อขัดแย้งของโค้ด (Conflict) ก่อนทำการ Merge
+    - หากมีการตั้งค่า **Status Checks** ต้องรอให้ผลการตรวจสอบผ่านทั้งหมด (เขียว) ถึงจะ Merge ได้
+    - หลังทำการ Merge แล้ว ให้ลบ Branch ของตัวเองทิ้งเพื่อความสะอาดของโปรเจค
+4.  **Update สม่ำเสมอ**: ก่อนเริ่มงานทุกครั้ง ให้ทำการดึงโค้ดล่าสุดจาก main มาที่เครื่องเสมอ:
+    ```bash
+    git checkout main
+    git pull origin main
+    ```
+
+---
+
 ## ⚠️ กฎการทำงานร่วมกัน (Team Rules)
 - **อย่าเขียน Logic ไว้ใน Route**: ให้ย้ายไปไว้ใน Controller เสมอ
 - **ใช้ TypeScript เสมอ**: ห้ามใช้ `any` หากไม่จำเป็นจริงๆ
 - **จัด Format โค้ด**: โปรดใช้ Prettier/ESLint ตามที่โปรเจคตั้งค่าไว้
+- **Commit Message**: เขียนคำอธิบายสั้นๆ ว่าแก้/เพิ่มอะไร (เช่น `feat: add login page`, `fix: database connection`)
