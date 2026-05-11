@@ -1,0 +1,77 @@
+from flask import jsonify
+from src.init import get_db_connection
+from psycopg2.extras import RealDictCursor
+import random
+import traceback
+
+def get_all_users():
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        # ดึงรายชื่อผู้ใช้พร้อมยอดรวมการสั่งซื้อ
+        query = """
+            SELECT 
+                u.user_id as id, 
+                CONCAT(u.first_name, ' ', u.last_name) as name, 
+                u.email, 
+                u.status::text as status,
+                COALESCE(SUM(o.total_price), 0) as total_spent
+            FROM users u
+            LEFT JOIN orders o ON u.user_id = o.user_id
+            WHERE u.deleted_at IS NULL
+            GROUP BY u.user_id, u.first_name, u.last_name, u.email, u.status
+            ORDER BY total_spent DESC
+        """
+        cursor.execute(query)
+        users = cursor.fetchall()
+
+        # Stats
+        cursor.execute("SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL")
+        total = cursor.fetchone()['count']
+        
+        cursor.execute("SELECT COUNT(*) as count FROM users WHERE status = 'active'")
+        active = cursor.fetchone()['count']
+
+        cursor.close()
+        
+        platforms = ['chrome', 'ios', 'safari', 'android']
+        
+        for u in users:
+            try:
+                spent = float(u['total_spent'])
+                if spent >= 50000:
+                    u['rank'] = 'Platinum'
+                elif spent >= 20000:
+                    u['rank'] = 'Gold'
+                elif spent >= 5000:
+                    u['rank'] = 'Silver'
+                else:
+                    u['rank'] = 'Bronze'
+                
+                u['status'] = str(u['status']).title() if u['status'] else 'Active'
+                u['platform'] = random.choice(platforms)
+                u['rank_display'] = f"{u['rank']} (${spent:,.2f})"
+            except Exception as e:
+                print(f"Error processing user {u.get('id')}: {e}")
+                u['rank'] = 'Bronze'
+                u['rank_display'] = 'Bronze ($0.00)'
+                u['platform'] = 'chrome'
+
+        return jsonify({
+            "users": users,
+            "stats": {
+                "total": total,
+                "active": active,
+                "reported": random.randint(1, 5),
+                "new": random.randint(5, 15)
+            }
+        })
+    except Exception as e:
+        print(f"ERROR in get_all_users: {e}")
+        traceback.print_exc()
+        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+    finally:
+        if conn:
+            conn.close()

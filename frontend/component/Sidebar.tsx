@@ -25,8 +25,9 @@ export default function Sidebar({ currentPage, setCurrentPage }: any) {
                     active={currentPage === 'products'}
                     onClick={() => setCurrentPage('products')}
                 />
-                <NavItem icon={<ShoppingCart size={20} />} label="Orders" active={currentPage === 'order'}
-                    onClick={() => setCurrentPage('order')} />
+                <NavItem icon={<ShoppingCart size={20} />} label="Orders" active={currentPage === 'orders'}
+                    onClick={() => setCurrentPage('orders')} />
+
                 <NavItem icon={<Users size={20} />} label="Users" active={currentPage === 'users'} 
           onClick={() => setCurrentPage('users')} />
                 <NavItem icon={<BarChart3 size={20} />} label="Reports" active={currentPage === 'reports'} 

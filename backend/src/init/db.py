@@ -1,23 +1,30 @@
-import mysql.connector
+import psycopg2
+from psycopg2.extras import RealDictCursor
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 def get_db_connection():
-    db_config = {
-        'host': os.getenv('DB_HOST', 'localhost'),
-        'user': os.getenv('DB_USER', 'root'),
-        'password': os.getenv('DB_PASSWORD', ''),
-        'database': os.getenv('DB_NAME', 'ps09_system')
-    }
-    return mysql.connector.connect(**db_config)
+    conn = psycopg2.connect(
+        host=os.getenv('DB_HOST', '127.0.0.1'),
+        port=os.getenv('DB_PORT', '5433'),
+        user=os.getenv('DB_USER', 'postgres'),
+        password=os.getenv('DB_PASSWORD', 'root*'),
+        dbname=os.getenv('DB_NAME', 'DB_project'),
+        connect_timeout=5
+    )
+    return conn
 
 def get_db_version():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT VERSION()")
-    version = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    return version[0] if version else "Unknown"
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT version();")
+        version = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return version[0] if version else "Unknown"
+    except Exception as e:
+        return f"Error: {str(e)}"
+

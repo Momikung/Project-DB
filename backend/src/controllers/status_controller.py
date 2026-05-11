@@ -10,7 +10,7 @@ def db_test_controller():
         return jsonify({
             "status": "Success",
             "database_version": version,
-            "message": "Connected to MySQL successfully!"
+            "message": "Connected to PostgreSQL successfully!"
         })
     except Exception as e:
         return jsonify({

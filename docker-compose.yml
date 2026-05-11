@@ -2,17 +2,16 @@ version: '3.8'
 
 services:
   db:
-    image: mysql:8.0
+    image: postgres:latest
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: ps09_system
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root*
+      POSTGRES_DB: DB_project
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
       - ./mysql:/docker-entrypoint-initdb.d
 
   backend:
@@ -21,11 +20,13 @@ services:
       - "5000:5000"
     environment:
       DB_HOST: db
-      DB_USER: user
-      DB_PASSWORD: password
-      DB_NAME: ps09_system
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: root*
+      DB_NAME: DB_project
     depends_on:
       - db
 
 volumes:
   db_data:
+

@@ -1,14 +1,18 @@
 from flask import jsonify
 from src.init import get_db_connection
+from psycopg2.extras import RealDictCursor
+import traceback
 
 def get_dashboard_stats():
+    conn = None
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-        # 1. Total Revenue
-        cursor.execute("SELECT SUM(total_price) as total_revenue FROM orders WHERE order_status != 'cancelled'")
-        revenue = cursor.fetchone()['total_revenue'] or 0
+        # 1. Total Revenue (Excluding cancelled orders)
+        cursor.execute("SELECT SUM(total_price) as total_revenue FROM orders WHERE order_status::text != 'cancelled'")
+        revenue_row = cursor.fetchone()
+        revenue = revenue_row['total_revenue'] if revenue_row and revenue_row['total_revenue'] else 0
 
         # 2. Total Orders
         cursor.execute("SELECT COUNT(*) as total_orders FROM orders")
@@ -23,24 +27,29 @@ def get_dashboard_stats():
         users_count = cursor.fetchone()['total_users']
 
         cursor.close()
-        conn.close()
 
         return jsonify({
             "revenue": float(revenue),
-            "orders": orders_count,
-            "products": products_count,
-            "users": users_count
+            "orders": int(orders_count),
+            "products": int(products_count),
+            "users": int(users_count)
         })
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"ERROR in get_dashboard_stats: {e}")
+        traceback.print_exc()
+        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+    finally:
+        if conn:
+            conn.close()
 
 def get_recent_orders():
+    conn = None
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
 
         query = """
-            SELECT o.order_id, o.shipping_name, o.total_price, o.order_status, o.order_date 
+            SELECT o.order_id, o.shipping_name, o.total_price, o.order_status::text as order_status, o.order_date 
             FROM orders o 
             ORDER BY o.order_date DESC 
             LIMIT 5
@@ -49,8 +58,17 @@ def get_recent_orders():
         orders = cursor.fetchall()
 
         cursor.close()
-        conn.close()
+
+        # Convert decimal prices to float
+        for o in orders:
+            o['total_price'] = float(o['total_price'])
 
         return jsonify(orders)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"ERROR in get_recent_orders: {e}")
+        traceback.print_exc()
+        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+    finally:
+        if conn:
+            conn.close()
+
