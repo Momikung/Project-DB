@@ -29,8 +29,8 @@ export default function Sidebar({ currentPage, setCurrentPage }: any) {
                     onClick={() => setCurrentPage('order')} />
                 <NavItem icon={<Users size={20} />} label="Users" active={currentPage === 'users'} 
           onClick={() => setCurrentPage('users')} />
-                <NavItem icon={<BarChart3 size={20} />} label="Reports" />
-                <NavItem icon={<Settings size={20} />} label="Settings" className="mt-auto" />
+                <NavItem icon={<BarChart3 size={20} />} label="Reports" active={currentPage === 'reports'} 
+                    onClick={() => setCurrentPage('reports')} />
             </nav>
         </aside>
     );
