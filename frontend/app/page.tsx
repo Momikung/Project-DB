@@ -6,6 +6,7 @@ import Login from './Login/Login';
 import DashBoardPage from './Page/DashBoardPage';
 import ProductPage from './Page/ProductPage';
 import OrderPage from './Page/OrderPage';
+import UserManagePage from './Page/UserManagePage';
 
 export default function MainApp() {
   // ใช้ State เช็คว่าจะแสดงหน้าไหน (login เป็นหน้าแรก)
@@ -16,7 +17,8 @@ export default function MainApp() {
       {view === 'login' && <Login onLogin={() => setView('dashboard')} />}
       {view === 'dashboard' && <DashBoardPage setCurrentPage={setView} />}
       {view === 'products' && <ProductPage setCurrentPage={setView} />}
-      {view === 'orders' && <OrderPage setCurrentPage={setView} />}
+      {view === 'order' && <OrderPage setCurrentPage={setView} />}
+      {view === 'users' && <UserManagePage setCurrentPage={setView} />}
     </>
   );
 }
