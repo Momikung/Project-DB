@@ -1,7 +1,6 @@
 "use client";
-import React from 'react';
 import Sidebar from '../../component/Sidebar'; // ตรวจสอบ path ให้ตรงกับโปรเจกต์ของคุณ
-import { User, Users, UserPlus, AlertTriangle, UserX, Monitor, Smartphone, Compass, Chrome } from 'lucide-react';
+import { User, Users, UserPlus, AlertTriangle, UserX, Monitor, Smartphone, Compass, Globe } from 'lucide-react';
 
 // ข้อมูลจำลองอ้างอิงจากในรูปภาพ
 const usersData = [
@@ -23,7 +22,7 @@ export default function UserPage({ setCurrentPage }: { setCurrentPage: any }) {
   const getPlatformIcon = (platform: string) => {
     switch(platform) {
       case 'chrome':
-        return <Chrome size={16} className="text-blue-400" />; // ใช้สีใกล้เคียงโลโก้
+        return <Globe size={16} className="text-blue-400" />; // ใช้สีใกล้เคียงโลโก้
       case 'ios':
         return <Smartphone size={16} className="text-gray-300" />; // แทน Apple
       case 'safari':
