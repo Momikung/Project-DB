@@ -24,6 +24,24 @@ export const api = {
     if (!res.ok) throw new Error('Failed to fetch products');
     return res.json();
   },
+  addProduct: async (data: any) => {
+    const res = await fetch(`${BASE_URL}/products/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('Failed to add product');
+    return res.json();
+  },
+  updateProduct: async (id: number, data: any) => {
+    const res = await fetch(`${BASE_URL}/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('Failed to update product');
+    return res.json();
+  },
   getOrders: async () => {
     const res = await fetch(`${BASE_URL}/orders/`);
     if (!res.ok) throw new Error('Failed to fetch all orders');

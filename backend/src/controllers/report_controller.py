@@ -109,6 +109,48 @@ def get_report_data():
             p['price_formatted'] = f"$ {float(p['price']):,.2f}"
             p['revenue_formatted'] = f"$ {float(p['total_revenue']):,.2f}"
 
+        # 6. Fulfilment Data (This Month vs Last Month Orders by Day)
+        cursor.execute("""
+            SELECT 
+                EXTRACT(DAY FROM d)::integer as day,
+                COUNT(CASE WHEN DATE_TRUNC('month', o.order_date) = DATE_TRUNC('month', NOW()) AND o.order_status::text != 'cancelled' THEN o.order_id END) as this_month,
+                COUNT(CASE WHEN DATE_TRUNC('month', o.order_date) = DATE_TRUNC('month', NOW() - INTERVAL '1 month') AND o.order_status::text != 'cancelled' THEN o.order_id END) as last_month
+            FROM generate_series(
+                DATE_TRUNC('month', NOW()),
+                DATE_TRUNC('month', NOW()) + INTERVAL '1 month' - INTERVAL '1 day',
+                INTERVAL '1 day'
+            ) d
+            LEFT JOIN orders o ON EXTRACT(DAY FROM o.order_date) = EXTRACT(DAY FROM d)
+                AND o.order_date >= DATE_TRUNC('month', NOW() - INTERVAL '1 month')
+            GROUP BY EXTRACT(DAY FROM d)
+            ORDER BY day
+        """)
+        fulfilment = cursor.fetchall()
+        for f in fulfilment:
+            f['this_month'] = int(f['this_month'])
+            f['last_month'] = int(f['last_month'])
+
+        # 7. Level Data (Volume = Orders, Service = Good Reviews by Category)
+        cursor.execute("""
+            SELECT 
+                c.category_name as name,
+                COUNT(DISTINCT o.order_id) as volume,
+                COUNT(DISTINCT r.review_id) * 5 as service
+            FROM categories c
+            LEFT JOIN products p ON c.category_id = p.category_id
+            LEFT JOIN product_variants pv ON p.product_id = pv.product_id
+            LEFT JOIN order_items oi ON pv.variant_id = oi.variant_id
+            LEFT JOIN orders o ON oi.order_id = o.order_id
+            LEFT JOIN reviews r ON p.product_id = r.product_id AND r.rating >= 4
+            GROUP BY c.category_id, c.category_name
+            ORDER BY volume DESC
+            LIMIT 5
+        """)
+        level_data = cursor.fetchall()
+        for l in level_data:
+            l['volume'] = int(l['volume'])
+            l['service'] = int(l['service'])
+
         cursor.close()
 
         return jsonify({
@@ -116,6 +158,8 @@ def get_report_data():
             "trends_day": trends_day,
             "inventory": inventory,
             "top_products": top_products,
+            "fulfilment": fulfilment,
+            "level": level_data,
             "stats": {
                 "total_revenue": float(total_rev),
                 "total_orders": int(total_orders),

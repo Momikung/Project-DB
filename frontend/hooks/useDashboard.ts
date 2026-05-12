@@ -6,6 +6,10 @@ export const useDashboard = () => {
   const [trendsMonth, setTrendsMonth] = useState<any[]>([]);
   const [trendsDay, setTrendsDay] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<any[]>([]);
+  const [topProducts, setTopProducts] = useState<any[]>([]);
+  const [fulfilment, setFulfilment] = useState<any[]>([]);
+  const [levelData, setLevelData] = useState<any[]>([]);
   const [activeMetric, setActiveMetric] = useState('revenue');
   const [granularity, setGranularity] = useState('month');
   
@@ -26,6 +30,10 @@ export const useDashboard = () => {
       const dayData = reportData.trends_day || [];
       setTrendsMonth(monthData);
       setTrendsDay(dayData);
+      setInventory(reportData.inventory || []);
+      setTopProducts(reportData.top_products || []);
+      setFulfilment(reportData.fulfilment || []);
+      setLevelData(reportData.level || []);
 
       // Initialize zoom range based on monthly data (default granularity)
       if (monthData.length > 0) {
@@ -102,6 +110,12 @@ export const useDashboard = () => {
     comparisonPoints,
     setComparisonPoints,
     filteredTrends,
+    trendsMonth,
+    trendsDay,
+    inventory,
+    topProducts,
+    fulfilment,
+    levelData,
     handleApplyFilter,
     applyQuickRange,
     config,

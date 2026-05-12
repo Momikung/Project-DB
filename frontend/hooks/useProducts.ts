@@ -19,6 +19,28 @@ export const useProducts = () => {
     }
   }, []);
 
+  const addProduct = async (data: any) => {
+    try {
+      await api.addProduct(data);
+      await fetchData();
+      return true;
+    } catch (error) {
+      console.error("Failed to add product", error);
+      return false;
+    }
+  };
+
+  const updateProduct = async (id: number, data: any) => {
+    try {
+      await api.updateProduct(id, data);
+      await fetchData();
+      return true;
+    } catch (error) {
+      console.error("Failed to update product", error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -50,6 +72,8 @@ export const useProducts = () => {
     categories,
     filteredProducts,
     lowStockCount,
+    addProduct,
+    updateProduct,
     refresh: fetchData
   };
 };

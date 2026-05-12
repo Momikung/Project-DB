@@ -2,6 +2,7 @@ from flask import jsonify
 from src.init import get_db_connection
 from psycopg2.extras import RealDictCursor
 import traceback
+from decimal import Decimal
 
 def get_all_orders():
     conn = None
@@ -37,17 +38,44 @@ def get_all_orders():
         cursor.execute("SELECT COUNT(*) as count FROM orders WHERE order_status::text = 'cancelled'")
         cancelled = cursor.fetchone()['count']
 
+        # Get all order items for these orders
+        order_ids = [o['id'] for o in orders]
+        items_dict = {o_id: [] for o_id in order_ids}
+        
+        if order_ids:
+            cursor.execute("""
+                SELECT 
+                    oi.order_id, 
+                    oi.product_name, 
+                    oi.quantity, 
+                    oi.unit_price
+                FROM order_items oi
+                WHERE oi.order_id IN %s
+            """, (tuple(order_ids),))
+            
+            order_items = cursor.fetchall()
+            for item in order_items:
+                items_dict[item['order_id']].append({
+                    "name": item['product_name'],
+                    "qty": int(item['quantity'] or 0),
+                    "price": float(item['unit_price'] or 0),
+                    "total": float(item['quantity'] or 0) * float(item['unit_price'] or 0)
+                })
+
         cursor.close()
 
         # Format for frontend
         for o in orders:
+            raw_amount = float(o['amount']) if o['amount'] is not None else 0.0
             o['display_id'] = f"Order #{o['id']}"
-            o['amount_formatted'] = f"$ {float(o['amount']):,.2f}"
+            o['amount'] = raw_amount
+            o['amount_formatted'] = f"$ {raw_amount:,.2f}"
             o['date_formatted'] = o['date'].strftime('%Y - %m - %d')
             o['status'] = str(o['status']).title()
+            o['items'] = items_dict.get(o['id'], [])
 
         return jsonify({
-            "orders": orders,
+            "orders": list(orders),
             "stats": {
                 "total": int(total),
                 "pending": int(pending),

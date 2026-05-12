@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from '../../component/Sidebar';
 import Header from '../../component/Header';
 import { ShoppingCart, Clock, Truck, XCircle, Search, Eye, Filter, Calendar, DollarSign, Zap, ArrowUpRight } from 'lucide-react';
@@ -25,6 +25,9 @@ export default function OrderPage({ setCurrentPage, user, onLogout }: any) {
     filteredOrders,
     clearAllFilters
   } = useOrders();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
   const getStatusBadge = (status: string) => {
     const s = status.toLowerCase();
@@ -89,7 +92,7 @@ export default function OrderPage({ setCurrentPage, user, onLogout }: any) {
                     <td className="px-12 py-8 font-mono text-sm text-indigo-500/80 tracking-tighter">#{order.id.toString().padStart(6, '0')}</td>
                     <td className="px-12 py-8"><p className="font-black text-white text-base uppercase">{order.customer}</p><p className="text-xs text-gray-600 uppercase font-bold mt-1">Primary Node Entity</p></td>
                     <td className="px-12 py-8 text-gray-400 text-sm font-bold uppercase">{order.date_formatted}</td><td className="px-12 py-8 font-black text-white text-lg font-mono">{order.amount_formatted}</td><td className="px-12 py-8">{getStatusBadge(order.status)}</td>
-                    <td className="px-12 py-8 text-right pr-12"><button className="bg-white/[0.03] border border-white/5 hover:bg-white text-gray-400 hover:text-black px-8 py-4 rounded-2xl text-xs font-black transition-all uppercase tracking-widest flex items-center gap-3 ml-auto shadow-lg"><Eye size={16} />View Node</button></td>
+                    <td className="px-12 py-8 text-right pr-12"><button onClick={() => { setSelectedOrder(order); setIsModalOpen(true); }} className="bg-white/[0.03] border border-white/5 hover:bg-white text-gray-400 hover:text-black px-8 py-4 rounded-2xl text-xs font-black transition-all uppercase tracking-widest flex items-center gap-3 ml-auto shadow-lg"><Eye size={16} />View Node</button></td>
                   </tr>
                 ))}
                 {filteredOrders.length === 0 && (
@@ -99,6 +102,63 @@ export default function OrderPage({ setCurrentPage, user, onLogout }: any) {
             </table>
           </div>
         </div>
+
+        {/* Modal Overlay: Order Details */}
+        {isModalOpen && selectedOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-[#20202A] border border-white/10 rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden text-gray-200 font-sans p-8 relative">
+              <div className="flex items-center gap-3 mb-8 border-b border-white/5 pb-4">
+                <div className="bg-emerald-500/20 p-2 rounded-lg text-emerald-500"><ShoppingCart size={24} /></div>
+                <h2 className="text-xl font-black text-white uppercase tracking-widest">ORDER DETAILS</h2>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Left: Order Info */}
+                <div>
+                  <h3 className="text-sm font-black uppercase text-gray-400 tracking-widest mb-4">Order Info</h3>
+                  <div className="space-y-4">
+                    <div><span className="text-gray-500 font-bold block text-xs">Order ID :</span><span className="text-white font-mono">{selectedOrder.display_id}</span></div>
+                    <div><span className="text-gray-500 font-bold block text-xs">Customer Name :</span><span className="text-white">{selectedOrder.customer}</span></div>
+                    <div><span className="text-gray-500 font-bold block text-xs">Date :</span><span className="text-white block">{selectedOrder.date_formatted}</span></div>
+                    <div><span className="text-gray-500 font-bold block text-xs mb-1">Status :</span>{getStatusBadge(selectedOrder.status)}</div>
+                  </div>
+                </div>
+
+                {/* Right: Items */}
+                <div>
+                  <h3 className="text-sm font-black uppercase text-gray-400 tracking-widest mb-4">ITEM</h3>
+                  <div className="space-y-2 mb-6">
+                    {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                      selectedOrder.items.map((item: any, i: number) => (
+                        <div key={i} className="bg-[#151521] border border-white/5 p-3 rounded-lg text-sm text-gray-300">
+                          {item.name} x{item.qty} - ${item.total.toFixed(2)}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="bg-[#151521] border border-white/5 p-3 rounded-lg text-sm text-gray-500 text-center">No items found</div>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between text-gray-400"><span>Subtotal</span><span>$ {((parseFloat(selectedOrder.amount) * 0.95) || 0).toFixed(2)}</span></div>
+                    <div className="flex justify-between text-gray-400"><span>Tax</span><span>$ {((parseFloat(selectedOrder.amount) * 0.05) || 0).toFixed(2)}</span></div>
+                    <div className="flex justify-between font-bold text-white text-base mt-2 pt-2 border-t border-white/5"><span>Total</span><span>{selectedOrder.amount_formatted}</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-10">
+                <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-lg uppercase tracking-widest">
+                  SAVE PRODUCT
+                </button>
+                <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg shadow-lg uppercase tracking-widest">
+                  CLOSE
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
 
       <style jsx global>{`
