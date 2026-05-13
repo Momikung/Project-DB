@@ -1,15 +1,19 @@
-"use client";
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Sidebar from '../../component/Sidebar';
 import Header from '../../component/Header';
-import { Users, UserPlus, UserX, Monitor, Smartphone, Globe, Search, Zap, ArrowUpRight, ShieldCheck, ShieldAlert, Compass, UserMinus } from 'lucide-react';
+import { Users, UserPlus, UserX, Monitor, Smartphone, Globe, ArrowUpRight, ShieldAlert, Compass, UserMinus } from 'lucide-react';
 import { useUsers } from '../../hooks/useUsers';
 
-export default function UserPage({ setCurrentPage, user, onLogout }: any) {
+interface UserPageProps {
+  setCurrentPage: (page: string) => void;
+  user: { name: string; email: string };
+  onLogout: () => void;
+}
+
+export default function UserPage({ setCurrentPage, user, onLogout }: UserPageProps) {
   const {
     stats,
-    searchTerm,
-    setSearchTerm,
     filteredUsers
   } = useUsers();
 
@@ -21,10 +25,7 @@ export default function UserPage({ setCurrentPage, user, onLogout }: any) {
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage) || 1;
   const currentUsers = filteredUsers.slice((pageIndex - 1) * itemsPerPage, pageIndex * itemsPerPage);
 
-  // Reset page when filter changes
-  React.useEffect(() => {
-    setPageIndex(1);
-  }, [searchTerm]);
+
 
   const openDetails = (u: any) => {
     setSelectedUser(u);
@@ -55,14 +56,7 @@ export default function UserPage({ setCurrentPage, user, onLogout }: any) {
     return <Monitor size={16} className="text-gray-500" />;
   };
 
-  const getRankStyle = (rank: string) => {
-    switch(rank) {
-      case 'Platinum': return 'text-purple-400 bg-purple-500/10 border-purple-500/20';
-      case 'Gold': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-      case 'Silver': return 'text-gray-400 bg-gray-500/10 border-gray-500/20';
-      default: return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
-    }
-  };
+
 
   return (
     <div className="flex min-h-screen bg-[#151521] text-gray-200 font-sans">
@@ -159,8 +153,8 @@ export default function UserPage({ setCurrentPage, user, onLogout }: any) {
                 </h2>
                 
                 <div className="flex gap-6 mb-6">
-                  <div className="w-16 h-16 shrink-0 rounded-full bg-[#151521] border border-white/10 shadow-sm flex items-center justify-center overflow-hidden">
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.name}`} alt="Avatar" className="w-full h-full object-cover" />
+                   <div className="w-16 h-16 shrink-0 rounded-full bg-[#151521] border border-white/10 shadow-sm flex items-center justify-center overflow-hidden">
+                    <Image src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.name}`} alt="Avatar" width={64} height={64} className="w-full h-full object-cover" />
                   </div>
                   <div className="space-y-1.5 text-sm flex-1">
                     <div className="flex items-center">
@@ -230,7 +224,14 @@ export default function UserPage({ setCurrentPage, user, onLogout }: any) {
   );
 }
 
-const UserOrbiter = ({ title, value, color, icon }: any) => (
+interface UserOrbiterProps {
+  title: string;
+  value: string | number;
+  color: string;
+  icon: React.ReactNode;
+}
+
+const UserOrbiter = ({ title, value, color, icon }: UserOrbiterProps) => (
   <div className="relative group p-8 rounded-[2rem] bg-[#20202A]/40 border border-white/5 shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-500 hover:border-white/10">
     {/* Pulsing background glow */}
     <div className="absolute top-0 right-0 w-32 h-32 blur-[80px] -z-10 group-hover:opacity-100 opacity-20 transition-opacity duration-700" style={{backgroundColor: color}}></div>

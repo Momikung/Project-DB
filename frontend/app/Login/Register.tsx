@@ -1,5 +1,5 @@
-"use client";
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaGithub, FaFacebook, FaEnvelope } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 
@@ -111,7 +111,7 @@ export default function Register({ onNavigateToLogin }: { onNavigateToLogin: () 
         {/* รูปภาพประกอบด้านขวา */}
         <div className="hidden md:flex justify-center items-center relative">
             <div className="absolute w-[400px] h-[400px] bg-[#EBF5FF] rounded-full opacity-60 blur-3xl animate-pulse"></div>
-            <img src="https://illustrations.popsy.co/white/graphic-design.svg" alt="Illustration" className="relative z-10 w-full max-w-md drop-shadow-2xl" />
+            <Image src="https://illustrations.popsy.co/white/graphic-design.svg" alt="Illustration" width={500} height={500} className="relative z-10 w-full max-w-md drop-shadow-2xl" />
         </div>
       </div>
     </div>

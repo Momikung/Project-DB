@@ -5,7 +5,13 @@ import Header from '../../component/Header';
 import { ShoppingCart, Clock, Truck, XCircle, Search, Eye, Filter, Calendar, DollarSign, Zap, ArrowUpRight } from 'lucide-react';
 import { useOrders } from '../../hooks/useOrders';
 
-export default function OrderPage({ setCurrentPage, user, onLogout }: any) {
+interface OrderPageProps {
+  setCurrentPage: (page: string) => void;
+  user: { name: string; email: string };
+  onLogout: () => void;
+}
+
+export default function OrderPage({ setCurrentPage, user, onLogout }: OrderPageProps) {
   const {
     stats,
     searchTerm,
@@ -170,7 +176,14 @@ export default function OrderPage({ setCurrentPage, user, onLogout }: any) {
   );
 }
 
-const OrderOrbiter = ({ title, value, color, icon }: any) => (
+interface OrderOrbiterProps {
+  title: string;
+  value: string | number;
+  color: string;
+  icon: React.ReactNode;
+}
+
+const OrderOrbiter = ({ title, value, color, icon }: OrderOrbiterProps) => (
   <div className="relative group p-8 rounded-[2rem] bg-[#20202A]/40 border border-white/5 shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-500 hover:border-white/10">
     {/* Pulsing background glow */}
     <div className="absolute top-0 right-0 w-32 h-32 blur-[80px] -z-10 group-hover:opacity-100 opacity-20 transition-opacity duration-700" style={{backgroundColor: color}}></div>

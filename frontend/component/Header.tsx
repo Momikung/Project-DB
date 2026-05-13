@@ -2,8 +2,14 @@
 import React, { useState } from 'react';
 import { LogOut, X, ShieldCheck, Mail, Clock } from 'lucide-react';
 
+interface UserData {
+  name: string;
+  email: string;
+  role?: string;
+}
+
 interface HeaderProps {
-    user: any;
+    user: UserData | null;
     onLogout: () => void;
     title: string;
     subtitle: string;

@@ -1,22 +1,30 @@
-"use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaGithub, FaFacebook, FaCheckCircle } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 
-export default function Login({ onLogin, onSignUp }: { onLogin: (user: any) => void, onSignUp: () => void }) {
-  const [email, setEmail] = useState('');
+interface User {
+  email: string;
+  name: string;
+}
+
+export default function Login({ onLogin, onSignUp }: { onLogin: (user: User) => void, onSignUp: () => void }) {
+  const [email, setEmail] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('rememberedEmail') || '';
+    }
+    return '';
+  });
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('rememberedEmail');
+    }
+    return false;
+  });
   const [showPassword, setShowPassword] = useState(false);
 
-  // โหลด email จาก localStorage ถ้าเคยกด Remember Me ไว้
-  useEffect(() => {
-    const savedEmail = localStorage.getItem('rememberedEmail');
-    if (savedEmail) {
-      setEmail(savedEmail);
-      setRememberMe(true);
-    }
-  }, []);
+
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,13 +128,13 @@ export default function Login({ onLogin, onSignUp }: { onLogin: (user: any) => v
           </div>
 
           <p className="w-full text-center mt-8 text-gray-300 text-sm">
-            Don't have account? <button type="button" onClick={onSignUp} className="text-white font-bold hover:underline">Sign up</button>
+            Don&apos;t have account? <button type="button" onClick={onSignUp} className="text-white font-bold hover:underline">Sign up</button>
           </p>
         </div>
 
         <div className="hidden md:flex justify-center items-center relative">
             <div className="absolute w-[400px] h-[400px] bg-[#F5F5FF] rounded-full opacity-90 blur-3xl animate-pulse"></div>
-            <img src="https://illustrations.popsy.co/white/work-from-home.svg" alt="Illustration" className="relative z-10 w-full max-w-md drop-shadow-2xl" />
+            <Image src="https://illustrations.popsy.co/white/work-from-home.svg" alt="Illustration" width={500} height={500} className="relative z-10 w-full max-w-md drop-shadow-2xl" />
         </div>
       </div>
     </div>

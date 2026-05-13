@@ -1,8 +1,18 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '../init/api';
 
+interface Product {
+  id: number;
+  name: string;
+  category: string;
+  price: string;
+  stock: number;
+  user_id?: number;
+  updateAt?: string;
+}
+
 export const useProducts = () => {
-  const [productsData, setProductsData] = useState<any[]>([]);
+  const [productsData, setProductsData] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -42,7 +52,10 @@ export const useProducts = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    const load = async () => {
+      await fetchData();
+    };
+    void load();
   }, [fetchData]);
 
   const categories = useMemo(() => {

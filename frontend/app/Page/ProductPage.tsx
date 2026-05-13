@@ -2,24 +2,35 @@
 import React, { useState } from 'react';
 import Sidebar from '../../component/Sidebar';
 import Header from '../../component/Header';
-import { Package, Edit, Trash2, Search, Plus, Filter, AlertTriangle, LayoutGrid, Zap, ArrowUpRight, ShoppingCart } from 'lucide-react';
+import { Package, Edit, Trash2, Search, Plus, AlertTriangle, LayoutGrid, ArrowUpRight, ShoppingCart } from 'lucide-react';
 import { useProducts } from '../../hooks/useProducts';
 import { api } from '../../init/api';
 
-export default function ProductPage({ setCurrentPage, user, onLogout }: any) {
+interface ProductPageProps {
+  setCurrentPage: (page: string) => void;
+  user: { name: string; email: string };
+  onLogout: () => void;
+}
+
+export default function ProductPage({ setCurrentPage, user, onLogout }: ProductPageProps) {
   const {
     productsData,
     isLoading,
     searchTerm,
     setSearchTerm,
     categoryFilter,
-    setCategoryFilter,
+    setCategoryFilter: originalSetCategoryFilter,
     categories,
     filteredProducts,
     lowStockCount,
     addProduct,
     updateProduct
   } = useProducts();
+
+  const setCategoryFilter = (val: string) => {
+    originalSetCategoryFilter(val);
+    setPageIndex(1);
+  };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
@@ -34,10 +45,11 @@ export default function ProductPage({ setCurrentPage, user, onLogout }: any) {
     }).catch(err => console.error("Failed to load users for product page", err));
   }, []);
 
-  // Reset page when filter changes
-  React.useEffect(() => {
+  // Search handler that resets page
+  const handleSearchChange = (val: string) => {
+    setSearchTerm(val);
     setPageIndex(1);
-  }, [searchTerm, categoryFilter]);
+  };
 
   if (isLoading) return null;
 
@@ -97,7 +109,7 @@ export default function ProductPage({ setCurrentPage, user, onLogout }: any) {
         <div className="bg-[#20202A] border border-white/5 rounded-2xl p-6 mb-8 shadow-lg flex items-center gap-6">
             <div className="flex-1 relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-[#151521] border border-white/5 rounded-xl pl-12 pr-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50" />
+                <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => handleSearchChange(e.target.value)} className="w-full bg-[#151521] border border-white/5 rounded-xl pl-12 pr-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50" />
             </div>
             <div className="flex items-center gap-2">
                 <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="bg-[#151521] border border-white/5 text-gray-300 text-sm rounded-xl py-3 px-4 focus:outline-none">
@@ -246,7 +258,14 @@ export default function ProductPage({ setCurrentPage, user, onLogout }: any) {
   );
 }
 
-const ProductOrbiter = ({ title, value, color, icon }: any) => (
+interface ProductOrbiterProps {
+  title: string;
+  value: string | number;
+  color: string;
+  icon: React.ReactNode;
+}
+
+const ProductOrbiter = ({ title, value, color, icon }: ProductOrbiterProps) => (
   <div className="relative group p-8 rounded-[2rem] bg-[#20202A]/40 border border-white/5 shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-500 hover:border-white/10">
     {/* Pulsing background glow */}
     <div className="absolute top-0 right-0 w-32 h-32 blur-[80px] -z-10 group-hover:opacity-100 opacity-20 transition-opacity duration-700" style={{backgroundColor: color}}></div>

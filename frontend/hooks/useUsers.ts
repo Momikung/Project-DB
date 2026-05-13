@@ -1,9 +1,24 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '../init/api';
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  status: string;
+  platform: string;
+}
+
+interface UserStats {
+  total: number;
+  active: number;
+  reported: number;
+  new: number;
+}
+
 export const useUsers = () => {
-  const [usersData, setUsersData] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [usersData, setUsersData] = useState<User[]>([]);
+  const [stats, setStats] = useState<UserStats | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const fetchData = useCallback(async () => {
@@ -17,7 +32,10 @@ export const useUsers = () => {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    const load = async () => {
+      await fetchData();
+    };
+    void load();
   }, [fetchData]);
 
   // Bug #3 Fix: Wrapped in useMemo (prevents re-computation on every render)

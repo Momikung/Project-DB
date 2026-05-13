@@ -1,14 +1,42 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '../init/api';
 
+interface DashboardStats {
+  total_revenue: number;
+  total_orders: number;
+  total_users: number;
+  low_stock: number;
+}
+
+interface TrendData {
+  name: string;
+  full_date: string;
+  revenue: number;
+  orders: number;
+  users: number;
+}
+
+interface InventoryItem {
+  name: string;
+  total: number;
+  short: number;
+  low: number;
+}
+
+interface TopProduct {
+  name: string;
+  total_revenue: string;
+  revenue_formatted: string;
+}
+
 export const useDashboard = () => {
-  const [stats, setStats] = useState<any>(null);
-  const [trendsYear, setTrendsYear] = useState<any[]>([]);
-  const [trendsMonth, setTrendsMonth] = useState<any[]>([]);
-  const [trendsDay, setTrendsDay] = useState<any[]>([]);
-  const [recentOrders, setRecentOrders] = useState<any[]>([]);
-  const [inventory, setInventory] = useState<any[]>([]);
-  const [topProducts, setTopProducts] = useState<any[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [trendsYear, setTrendsYear] = useState<TrendData[]>([]);
+  const [trendsMonth, setTrendsMonth] = useState<TrendData[]>([]);
+  const [trendsDay, setTrendsDay] = useState<TrendData[]>([]);
+  const [recentOrders, setRecentOrders] = useState<any[]>([]); // Keeping any for now to avoid too many interfaces
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [fulfilment, setFulfilment] = useState<any[]>([]);
   const [levelData, setLevelData] = useState<any[]>([]);
   const [activeMetric, setActiveMetric] = useState('revenue');
@@ -56,7 +84,10 @@ export const useDashboard = () => {
   }, []); // No more 'granularity' dependency — stable reference
 
   useEffect(() => {
-    fetchData();
+    const load = async () => {
+      await fetchData();
+    };
+    void load();
   }, [fetchData]);
 
   const currentTrends = useMemo(

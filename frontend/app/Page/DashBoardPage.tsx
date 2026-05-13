@@ -3,13 +3,19 @@ import React, { useMemo } from 'react';
 import Sidebar from '../../component/Sidebar';
 import Header from '../../component/Header';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell
 } from 'recharts';
 import { useDashboard } from '../../hooks/useDashboard';
 import { Activity, ShoppingCart, Users, Package, ArrowUpRight } from 'lucide-react';
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-[#1f2128] border border-gray-700 p-2 rounded text-xs text-gray-200 shadow-xl">
@@ -25,10 +31,16 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
+interface DashBoardPageProps {
+  setCurrentPage: (page: string) => void;
+  user: { name: string; email: string };
+  onLogout: () => void;
+}
+
+export default function DashBoardPage({ setCurrentPage, user, onLogout }: DashBoardPageProps) {
   const { 
-    stats, trendsMonth, trendsDay, inventory, topProducts, fulfilment, levelData,
-    handleApplyFilter, applyQuickRange, config,
+    stats, fulfilment, levelData, topProducts, inventory,
+    handleApplyFilter, applyQuickRange,
     startDate, setStartDate, endDate, setEndDate, granularity, filteredTrends
   } = useDashboard();
 
@@ -66,9 +78,9 @@ export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
     ];
     
     // Find max revenue to calculate popularity percentage
-    const maxRev = topProducts && topProducts.length ? Math.max(...topProducts.map((p: any) => parseFloat(p.total_revenue) || 0)) : 1;
+    const maxRev = topProducts && topProducts.length ? Math.max(...topProducts.map((p) => parseFloat(p.total_revenue) || 0)) : 1;
 
-    return (topProducts || []).map((p: any, idx: number) => {
+    return (topProducts || []).map((p, idx: number) => {
       const rev = parseFloat(p.total_revenue) || 0;
       const popularity = Math.min(100, Math.max(10, (rev / (maxRev || 1)) * 100));
       return {
@@ -83,7 +95,7 @@ export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
   }, [topProducts]);
 
   const mappedInventory = useMemo(() => {
-    return (inventory || []).map((i: any) => ({
+    return (inventory || []).map((i) => ({
       name: i.name,
       stock: i.total,
       lowStock: (i.short || 0) + (i.low || 0)
@@ -92,7 +104,7 @@ export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
 
   const inventoryShareData = useMemo(() => {
     const colors = ['#3B82F6', '#EC4899', '#F59E0B', '#10B981', '#8B5CF6'];
-    return (inventory || []).slice(0, 4).map((i: any, idx: number) => ({
+    return (inventory || []).slice(0, 4).map((i, idx: number) => ({
       name: i.name,
       value: i.total || 0,
       color: colors[idx % colors.length]
@@ -404,7 +416,14 @@ export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
   );
 }
 
-const StatCard = ({ title, value, color, icon }: any) => (
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  color: string;
+  icon: React.ReactNode;
+}
+
+const StatCard = ({ title, value, color, icon }: StatCardProps) => (
   <div className="relative group p-8 rounded-[2rem] bg-[#20202A]/40 border border-white/5 shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-500 hover:border-white/10">
     {/* Pulsing background glow */}
     <div className="absolute top-0 right-0 w-32 h-32 blur-[80px] -z-10 group-hover:opacity-100 opacity-20 transition-opacity duration-700" style={{backgroundColor: color}}></div>

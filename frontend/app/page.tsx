@@ -10,41 +10,47 @@ import OrderPage from './Page/OrderPage';
 import UserManagePage from './Page/UserManagePage';
 import ReportPage from './Page/ReportPage';
 
-export default function MainApp() {
-  // ใช้ State เช็คว่าจะแสดงหน้าไหน (login เป็นหน้าแรก)
-  const VALID_VIEWS = ['login', 'register', 'dashboard', 'products', 'orders', 'users', 'reports'];
-  const [view, setView] = useState('login');
-  const [user, setUser] = useState<any>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+interface UserData {
+  email: string;
+  name: string;
+}
 
-  // โหลดสถานะหน้าล่าสุดจาก localStorage เมื่อเปิดเว็บ
-  useEffect(() => {
-    const savedView = localStorage.getItem('currentView');
-    const savedUser = localStorage.getItem('currentUser');
-    // Validate ก่อน — ถ้าค่าเก่าไม่ตรงกับหน้าที่มีอยู่ ให้ reset กลับ login
-    if (savedView && VALID_VIEWS.includes(savedView)) {
-      setView(savedView);
-    } else if (savedView) {
-      localStorage.removeItem('currentView');
+const VALID_VIEWS = ['login', 'register', 'dashboard', 'products', 'orders', 'users', 'reports'];
+
+export default function MainApp() {
+  const [view, setView] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('currentView');
+      return (saved && VALID_VIEWS.includes(saved)) ? saved : 'login';
     }
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('currentView');
+    return 'login';
+  });
+  const [user, setUser] = useState<UserData | null>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('currentUser');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return null;
+        }
       }
     }
-    setIsLoaded(true);
+    return null;
+  });
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    const handle = requestAnimationFrame(() => setIsLoaded(true));
+    return () => cancelAnimationFrame(handle);
   }, []);
 
-  // บันทึกสถานะหน้าเมื่อมีการเปลี่ยนหน้า
   const handleSetView = (newView: string) => {
     setView(newView);
     localStorage.setItem('currentView', newView);
   };
 
-  const handleLogin = (userData: any) => {
+  const handleLogin = (userData: UserData) => {
     setUser(userData);
     localStorage.setItem('currentUser', JSON.stringify(userData));
     handleSetView('dashboard');

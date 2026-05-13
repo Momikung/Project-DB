@@ -2,13 +2,19 @@
 import React, { useState } from 'react';
 import Sidebar from '../../component/Sidebar';
 import Header from '../../component/Header';
-import { User, Package, TrendingUp, ChevronRight, X, ArrowUpRight, ArrowDownRight, MousePointer2, FileSpreadsheet, Filter, Lightbulb, Loader2, Zap } from 'lucide-react';
+import { User, Package, TrendingUp, X, ArrowUpRight, ArrowDownRight, MousePointer2, FileSpreadsheet, Filter, Lightbulb, Loader2, Zap } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Brush } from 'recharts';
 import { useReport } from '../../hooks/useReport';
 
 const COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#8B5CF6', '#06B6D4', '#F43F5E'];
 
-export default function ReportPage({ setCurrentPage, user, onLogout }: any) {
+interface ReportPageProps {
+  setCurrentPage: (page: string) => void;
+  user: { name: string; email: string };
+  onLogout: () => void;
+}
+
+export default function ReportPage({ setCurrentPage, user, onLogout }: ReportPageProps) {
   const {
     reportData,
     isLoading,
@@ -30,19 +36,19 @@ export default function ReportPage({ setCurrentPage, user, onLogout }: any) {
   const categoryDetails = React.useMemo(() => {
     if (!selectedCategory || !reportData?.top_products) return [];
     return reportData.top_products
-      .filter((p: any) => p.category === selectedCategory)
+      .filter((p) => p.category === selectedCategory)
       .slice(0, 10); 
   }, [selectedCategory, reportData]);
 
   const exportToCSV = () => {
     if (!reportData?.trends_month) return;
     const headers = ["Year", "Month", "Full_Date", "Revenue_USD", "Order_Count", "User_Acquisition", "Avg_Order_Value"];
-    const rows = reportData.trends_month.map((t: any) => {
+    const rows = reportData.trends_month.map((t) => {
         const date = new Date(t.full_date);
         const aov = t.orders > 0 ? (t.revenue / t.orders).toFixed(2) : "0.00";
         return [date.getFullYear(), date.getMonth() + 1, t.full_date, (t.revenue || 0).toFixed(2), (t.orders || 0), (t.users || 0), aov];
     });
-    const csvContent = "data:text/csv;charset=utf-8," + "Report: Global Performance Intelligence\n" + `Export Date: ${new Date().toLocaleString()}\n\n` + headers.join(",") + "\n" + rows.map((e: any) => e.join(",")).join("\n");
+    const csvContent = "data:text/csv;charset=utf-8," + "Report: Global Performance Intelligence\n" + `Export Date: ${new Date().toLocaleString()}\n\n` + headers.join(",") + "\n" + rows.map((e) => e.join(",")).join("\n");
     const link = document.createElement("a");
     link.setAttribute("href", encodeURI(csvContent));
     link.setAttribute("download", `Statistical_Report_${new Date().toISOString().split('T')[0]}.csv`);
@@ -125,8 +131,8 @@ export default function ReportPage({ setCurrentPage, user, onLogout }: any) {
                 <div className="h-80 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                            <Pie data={distributionData} cx="50%" cy="50%" innerRadius={80} outerRadius={120} paddingAngle={5} dataKey="value" onClick={(d: any) => setSelectedCategory(d.name)} cursor="pointer">
-                                {distributionData.map((_: any, index: number) => (
+                            <Pie data={distributionData} cx="50%" cy="50%" innerRadius={80} outerRadius={120} paddingAngle={5} dataKey="value" onClick={(entry) => setSelectedCategory(entry.name)} cursor="pointer">
+                                {distributionData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" className="hover:opacity-80 transition-opacity" />
                                 ))}
                             </Pie>
@@ -135,10 +141,10 @@ export default function ReportPage({ setCurrentPage, user, onLogout }: any) {
                     </ResponsiveContainer>
                 </div>
                 <div className="space-y-4">
-                    {distributionData.slice(0, 5).map((item: any, index: number) => (
+                    {distributionData.slice(0, 5).map((item, index) => (
                         <div key={index} onClick={() => setSelectedCategory(item.name)} className={`flex justify-between items-center p-5 rounded-2xl border transition-all cursor-pointer ${selectedCategory === item.name ? 'bg-indigo-500/10 border-indigo-500/30 shadow-lg shadow-indigo-500/5' : 'bg-white/[0.02] border-white/5 hover:border-white/10'}`}>
                             <div className="flex items-center gap-4"><div className="w-3 h-3 rounded-full" style={{backgroundColor: COLORS[index % COLORS.length]}}></div><span className="text-xs font-black text-white uppercase tracking-widest">{item.name}</span></div>
-                            <div className="flex items-center gap-6">{item.alerts > 0 && <span className="text-[10px] font-black text-rose-500 uppercase">{item.alerts} Alerts</span>}<span className="text-sm font-black text-gray-500 font-mono">{Math.round((item.value / (distributionData.reduce((acc: number, curr: any) => acc + curr.value, 0) || 1)) * 100)}%</span></div>
+                            <div className="flex items-center gap-6">{item.alerts > 0 && <span className="text-[10px] font-black text-rose-500 uppercase">{item.alerts} Alerts</span>}<span className="text-sm font-black text-gray-500 font-mono">{Math.round((item.value / (distributionData.reduce((acc: number, curr) => acc + curr.value, 0) || 1)) * 100)}%</span></div>
                         </div>
                     ))}
                 </div>
@@ -174,7 +180,7 @@ export default function ReportPage({ setCurrentPage, user, onLogout }: any) {
                         <div><h4 className="text-2xl font-black text-white uppercase tracking-tight">Neural Insight</h4><p className="text-xs text-gray-600 font-bold uppercase">Asset AI Intelligence</p></div>
                     </div>
                     <p className="text-gray-400 text-base leading-relaxed mb-12 font-medium italic border-l-4 border-indigo-500 pl-8">
-                        "Your current {activeInsight} momentum is exhibiting a healthy growth pattern within this timeframe. Continue optimizing flow for 15% valuation increase."
+                        &quot;Your current {activeInsight} momentum is exhibiting a healthy growth pattern within this timeframe. Continue optimizing flow for 15% valuation increase.&quot;
                     </p>
                     <button onClick={() => setActiveInsight(null)} className="w-full py-5 bg-white text-black font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-gray-200 transition-all shadow-xl shadow-white/5">Acknowledge</button>
                 </div>

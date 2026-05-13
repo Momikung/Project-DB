@@ -1,8 +1,13 @@
 "use client";
 import React from 'react';
-import { LayoutDashboard, Box, ShoppingCart, Users, BarChart3, Settings } from 'lucide-react';
+import { LayoutDashboard, Box, ShoppingCart, Users, BarChart3 } from 'lucide-react';
 
-export default function Sidebar({ currentPage, setCurrentPage }: any) {
+interface SidebarProps {
+  currentPage: string;
+  setCurrentPage: (page: string) => void;
+}
+
+export default function Sidebar({ currentPage, setCurrentPage }: SidebarProps) {
     return (
         <aside className="w-64 bg-[#16171D] border-r border-gray-800 p-6 flex flex-col gap-8 shrink-0 min-h-screen">
             <div className="flex items-center gap-3 px-2">
@@ -37,7 +42,15 @@ export default function Sidebar({ currentPage, setCurrentPage }: any) {
     );
 };
 
-const NavItem = ({ icon, label, active = false, onClick, className = "" }: any) => (
+interface NavItemProps {
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+  className?: string;
+}
+
+const NavItem = ({ icon, label, active = false, onClick, className = "" }: NavItemProps) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${active ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'

@@ -1,9 +1,28 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '../init/api';
 
+interface OrderData {
+  id: number;
+  display_id: string;
+  customer: string;
+  date: string;
+  date_formatted: string;
+  amount: string;
+  amount_formatted: string;
+  status: string;
+  items?: any[];
+}
+
+interface OrderStats {
+  total: number;
+  pending: number;
+  shipped: number;
+  cancelled: number;
+}
+
 export const useOrders = () => {
-  const [ordersData, setOrdersData] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [ordersData, setOrdersData] = useState<OrderData[]>([]);
+  const [stats, setStats] = useState<OrderStats | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [startDate, setStartDate] = useState("");
@@ -23,7 +42,10 @@ export const useOrders = () => {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    const load = async () => {
+      await fetchData();
+    };
+    void load();
   }, [fetchData]);
 
   const filteredOrders = useMemo(() => {

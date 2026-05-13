@@ -24,7 +24,7 @@ export const api = {
     if (!res.ok) throw new Error('Failed to fetch products');
     return res.json();
   },
-  addProduct: async (data: any) => {
+  addProduct: async (data: Record<string, unknown>) => {
     const res = await fetch(`${BASE_URL}/products/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -33,7 +33,7 @@ export const api = {
     if (!res.ok) throw new Error('Failed to add product');
     return res.json();
   },
-  updateProduct: async (id: number, data: any) => {
+  updateProduct: async (id: number, data: Record<string, unknown>) => {
     const res = await fetch(`${BASE_URL}/products/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
