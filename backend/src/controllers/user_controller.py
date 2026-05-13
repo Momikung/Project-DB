@@ -4,6 +4,8 @@ from psycopg2.extras import RealDictCursor
 import random
 import traceback
 
+from src.queries import user_queries
+
 def get_all_users():
     conn = None
     try:
@@ -11,27 +13,14 @@ def get_all_users():
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
         # ดึงรายชื่อผู้ใช้พร้อมยอดรวมการสั่งซื้อ
-        query = """
-            SELECT 
-                u.user_id as id, 
-                CONCAT(u.first_name, ' ', u.last_name) as name, 
-                u.email, 
-                u.status::text as status,
-                COALESCE(SUM(o.total_price), 0) as total_spent
-            FROM users u
-            LEFT JOIN orders o ON u.user_id = o.user_id
-            WHERE u.deleted_at IS NULL
-            GROUP BY u.user_id, u.first_name, u.last_name, u.email, u.status
-            ORDER BY total_spent DESC
-        """
-        cursor.execute(query)
+        cursor.execute(user_queries.ALL_USERS_WITH_SPENT)
         users = cursor.fetchall()
 
         # Stats
-        cursor.execute("SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL")
+        cursor.execute(user_queries.TOTAL_USERS_COUNT)
         total = cursor.fetchone()['count']
         
-        cursor.execute("SELECT COUNT(*) as count FROM users WHERE status = 'active'")
+        cursor.execute(user_queries.ACTIVE_USERS_COUNT)
         active = cursor.fetchone()['count']
 
         cursor.close()

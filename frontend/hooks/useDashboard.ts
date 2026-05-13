@@ -3,6 +3,7 @@ import { api } from '../init/api';
 
 export const useDashboard = () => {
   const [stats, setStats] = useState<any>(null);
+  const [trendsYear, setTrendsYear] = useState<any[]>([]);
   const [trendsMonth, setTrendsMonth] = useState<any[]>([]);
   const [trendsDay, setTrendsDay] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
@@ -26,8 +27,10 @@ export const useDashboard = () => {
     try {
       const reportData = await api.getReports();
       setStats(reportData.stats);
+      const yearData = reportData.trends_year || [];
       const monthData = reportData.trends_month || [];
       const dayData = reportData.trends_day || [];
+      setTrendsYear(yearData);
       setTrendsMonth(monthData);
       setTrendsDay(dayData);
       setInventory(reportData.inventory || []);
@@ -36,9 +39,10 @@ export const useDashboard = () => {
       setLevelData(reportData.level || []);
 
       // Initialize zoom range based on monthly data (default granularity)
+      // Default to entire available data range (startIdx = 0)
       if (monthData.length > 0) {
         const endIdx = monthData.length - 1;
-        const startIdx = Math.max(0, endIdx - 11);
+        const startIdx = 0; 
         setZoomRange({ start: startIdx, end: endIdx });
         setStartDate(monthData[startIdx]?.full_date || "");
         setEndDate(monthData[endIdx]?.full_date || "");
@@ -56,8 +60,12 @@ export const useDashboard = () => {
   }, [fetchData]);
 
   const currentTrends = useMemo(
-    () => (granularity === 'month' ? trendsMonth : trendsDay),
-    [granularity, trendsMonth, trendsDay]
+    () => {
+      if (granularity === 'year') return trendsYear;
+      if (granularity === 'day') return trendsDay;
+      return trendsMonth;
+    },
+    [granularity, trendsYear, trendsMonth, trendsDay]
   );
 
   const filteredTrends = useMemo(() => {
@@ -74,18 +82,22 @@ export const useDashboard = () => {
     }
   }, [currentTrends, startDate, endDate]);
 
-  const applyQuickRange = useCallback((months: number, days: number = 0) => {
-    const sourceData = days > 0 ? trendsDay : trendsMonth;
+  const applyQuickRange = useCallback((rangeValue: number, type: 'year' | 'month' | 'day') => {
+    let sourceData = trendsMonth;
+    if (type === 'year') sourceData = trendsYear;
+    else if (type === 'day') sourceData = trendsDay;
+    
     if (!sourceData.length) return;
-    if (days > 0) setGranularity('day');
-    else setGranularity('month');
-    const range = days > 0 ? days : months;
+    setGranularity(type);
+    
     const endIdx = sourceData.length - 1;
-    const startIdx = Math.max(0, endIdx - range + 1);
+    // If rangeValue is 0, it means "All Time"
+    const startIdx = rangeValue > 0 ? Math.max(0, endIdx - rangeValue + 1) : 0;
+    
     setZoomRange({ start: startIdx, end: endIdx });
     setStartDate(sourceData[startIdx]?.full_date || "");
     setEndDate(sourceData[endIdx]?.full_date || "");
-  }, [trendsDay, trendsMonth]);
+  }, [trendsYear, trendsMonth, trendsDay]);
 
   const config = useMemo(() => {
     switch(activeMetric) {
@@ -110,6 +122,7 @@ export const useDashboard = () => {
     comparisonPoints,
     setComparisonPoints,
     filteredTrends,
+    trendsYear,
     trendsMonth,
     trendsDay,
     inventory,

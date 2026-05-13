@@ -4,6 +4,8 @@ from psycopg2.extras import RealDictCursor
 import traceback
 from decimal import Decimal
 
+from src.queries import order_queries
+
 def get_all_orders():
     conn = None
     try:
@@ -11,31 +13,20 @@ def get_all_orders():
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
         # ดึงข้อมูลจากตาราง orders โดยตรง
-        query = """
-            SELECT 
-                order_id as id, 
-                shipping_name as customer, 
-                order_date as date, 
-                total_price as amount, 
-                order_status::text as status
-            FROM orders
-            ORDER BY order_date DESC
-            LIMIT 100
-        """
-        cursor.execute(query)
+        cursor.execute(order_queries.ALL_ORDERS)
         orders = cursor.fetchall()
 
         # Get stats for the top cards
-        cursor.execute("SELECT COUNT(*) as count FROM orders")
+        cursor.execute(order_queries.TOTAL_ORDERS_COUNT)
         total = cursor.fetchone()['count']
         
-        cursor.execute("SELECT COUNT(*) as count FROM orders WHERE order_status::text = 'pending'")
+        cursor.execute(order_queries.ORDER_STATS_PENDING)
         pending = cursor.fetchone()['count']
         
-        cursor.execute("SELECT COUNT(*) as count FROM orders WHERE order_status::text IN ('shipped', 'delivered')")
+        cursor.execute(order_queries.ORDER_STATS_SHIPPED)
         shipped = cursor.fetchone()['count']
         
-        cursor.execute("SELECT COUNT(*) as count FROM orders WHERE order_status::text = 'cancelled'")
+        cursor.execute(order_queries.ORDER_STATS_CANCELLED)
         cancelled = cursor.fetchone()['count']
 
         # Get all order items for these orders
@@ -43,15 +34,7 @@ def get_all_orders():
         items_dict = {o_id: [] for o_id in order_ids}
         
         if order_ids:
-            cursor.execute("""
-                SELECT 
-                    oi.order_id, 
-                    oi.product_name, 
-                    oi.quantity, 
-                    oi.unit_price
-                FROM order_items oi
-                WHERE oi.order_id IN %s
-            """, (tuple(order_ids),))
+            cursor.execute(order_queries.ORDER_ITEMS_BY_IDS, (tuple(order_ids),))
             
             order_items = cursor.fetchall()
             for item in order_items:

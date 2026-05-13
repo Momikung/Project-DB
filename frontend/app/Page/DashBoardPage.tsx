@@ -7,7 +7,7 @@ import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell
 } from 'recharts';
 import { useDashboard } from '../../hooks/useDashboard';
-import { Activity, ShoppingCart, Users, Package } from 'lucide-react';
+import { Activity, ShoppingCart, Users, Package, ArrowUpRight } from 'lucide-react';
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -26,15 +26,19 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
-  const { stats, trendsMonth, trendsDay, inventory, topProducts, fulfilment, levelData } = useDashboard();
+  const { 
+    stats, trendsMonth, trendsDay, inventory, topProducts, fulfilment, levelData,
+    handleApplyFilter, applyQuickRange, config,
+    startDate, setStartDate, endDate, setEndDate, granularity, filteredTrends
+  } = useDashboard();
 
   // --- MAP REAL DB DATA TO CHARTS ---
   const visitorData = useMemo(() => {
-    return (trendsMonth || []).slice(-12).map((t: any) => ({
+    return (filteredTrends || []).map((t: any) => ({
       name: t.name.split(' ')[0], // 'Jan 24' -> 'Jan'
       visitors: t.users || 0
     }));
-  }, [trendsMonth]);
+  }, [filteredTrends]);
 
   const fulfilmentData = useMemo(() => {
     return (fulfilment || []).map((t: any) => ({
@@ -97,7 +101,7 @@ export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
 
   // Calculate percentage for gauges based on total revenue and users
   // Setting arbitrary goals for demonstration
-  const revenueGoal = 50000; // $50,000 target
+  const revenueGoal = 1000000; // $1,000,000 target
   const currentRev = stats?.total_revenue || 0;
   const revPct = Math.min(100, Math.round((currentRev / revenueGoal) * 100)) || 0;
   const gaugeData1 = [
@@ -105,7 +109,7 @@ export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
     { name: 'Remaining', value: 100 - revPct, fill: '#374151' }
   ];
 
-  const usersGoal = 1000;
+  const usersGoal = 20000;
   const currentUsers = stats?.total_users || 0;
   const userPct = Math.min(100, Math.round((currentUsers / usersGoal) * 100)) || 0;
   const gaugeData2 = [
@@ -119,6 +123,52 @@ export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
       
       <main className="flex-1 p-8 overflow-y-auto w-full">
         <Header user={user} onLogout={onLogout} title="Dashboard Overview" subtitle="" hideSubtitle />
+
+        {/* Premium Dashboard Slicer (Filter Bar) */}
+        <div className="relative mb-10 group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 via-blue-500/10 to-purple-500/20 rounded-[2.5rem] blur-xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
+            <div className="relative bg-[#20202A]/80 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-6 shadow-2xl flex flex-wrap items-center gap-8">
+                <div className="flex items-center gap-2 border-r border-white/5 pr-8">
+                    <button 
+                        onClick={() => applyQuickRange(0, 'year')} 
+                        className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${granularity === 'year' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/40' : 'bg-white/5 text-gray-500 hover:text-white'}`}
+                    >
+                        Yearly
+                    </button>
+                    <button 
+                        onClick={() => applyQuickRange(0, 'month')} 
+                        className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${granularity === 'month' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/40' : 'bg-white/5 text-gray-500 hover:text-white'}`}
+                    >
+                        Monthly
+                    </button>
+                    <button 
+                        onClick={() => applyQuickRange(0, 'day')} 
+                        className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${granularity === 'day' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/40' : 'bg-white/5 text-gray-500 hover:text-white'}`}
+                    >
+                        Daily
+                    </button>
+                </div>
+                
+                <div className="flex items-center gap-6 bg-[#151521]/60 p-2 px-6 rounded-[1.5rem] border border-white/5 shadow-inner">
+                    <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-black text-gray-600 uppercase">From</span>
+                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-transparent text-xs font-black text-white outline-none [color-scheme:dark]" />
+                    </div>
+                    <div className="h-4 w-px bg-white/10"></div>
+                    <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-black text-gray-600 uppercase">To</span>
+                        <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-transparent text-xs font-black text-white outline-none [color-scheme:dark]" />
+                    </div>
+                </div>
+
+                <button 
+                    onClick={handleApplyFilter} 
+                    className="ml-auto bg-white text-black px-10 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-200 hover:scale-[1.02] transition-all active:scale-[0.98] shadow-xl shadow-white/5"
+                >
+                    Recalculate Analysis
+                </button>
+            </div>
+        </div>
 
         {/* Top Stat Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -169,7 +219,7 @@ export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} domain={[0, (dataMax: number) => Math.max(dataMax, 10)]} allowDecimals={false} />
                   <Tooltip content={<CustomTooltip />} />
                   <Area type="monotone" dataKey="visitors" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorVisitors)" />
                 </AreaChart>
@@ -269,7 +319,7 @@ export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
             <div className="bg-[#20202A] rounded-2xl p-6 shadow-lg border border-white/5 flex flex-col items-center relative overflow-hidden">
               <div className="w-full mb-2">
                 <h3 className="text-sm font-semibold text-white">Earnings Goal</h3>
-                <p className="text-xs text-gray-400">Target $50K</p>
+                <p className="text-xs text-gray-400">Target $1M</p>
                 <p className="text-xl font-bold text-green-400 mt-2">${currentRev.toLocaleString()}</p>
                 <p className="text-[10px] text-gray-500 mt-1">Based on total revenue</p>
               </div>
@@ -288,7 +338,7 @@ export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
             <div className="bg-[#20202A] rounded-2xl p-6 shadow-lg border border-white/5 flex flex-col items-center relative overflow-hidden">
               <div className="w-full mb-2">
                 <h3 className="text-sm font-semibold text-white">Users Target</h3>
-                <p className="text-xs text-gray-400">Target 1,000</p>
+                <p className="text-xs text-gray-400">Target 20,000</p>
                 <p className="text-xl font-bold text-pink-400 mt-2">{currentUsers.toLocaleString()}</p>
                 <p className="text-[10px] text-gray-500 mt-1">Based on total users</p>
               </div>
@@ -355,15 +405,18 @@ export default function DashBoardPage({ setCurrentPage, user, onLogout }: any) {
 }
 
 const StatCard = ({ title, value, color, icon }: any) => (
-  <div className={`p-6 rounded-2xl flex items-center gap-4 ${color} shadow-lg shadow-black/20 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform`}>
-    <div className="bg-white/20 p-4 rounded-xl backdrop-blur-sm z-10">
-      {icon}
+  <div className="relative group p-8 rounded-[2rem] bg-[#20202A]/40 border border-white/5 shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-500 hover:border-white/10">
+    {/* Pulsing background glow */}
+    <div className="absolute top-0 right-0 w-32 h-32 blur-[80px] -z-10 group-hover:opacity-100 opacity-20 transition-opacity duration-700" style={{backgroundColor: color}}></div>
+    
+    <div className="flex justify-between items-start mb-6">
+      <div className="p-4 bg-white/5 rounded-2xl text-gray-400 group-hover:text-white transition-all shadow-inner border border-white/5" style={{color: color}}>{icon}</div>
+      <ArrowUpRight size={20} className="text-gray-700 group-hover:text-white transition-all" />
     </div>
-    <div className="z-10">
-      <h4 className="text-sm font-semibold opacity-90">{title}</h4>
-      <p className="text-2xl font-bold mt-1 tracking-tight">{value}</p>
+    
+    <div>
+      <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] mb-2">{title}</p>
+      <h4 className="text-3xl font-black text-white tracking-tighter leading-none">{value}</h4>
     </div>
-    {/* Decorative background element */}
-    <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
   </div>
 );

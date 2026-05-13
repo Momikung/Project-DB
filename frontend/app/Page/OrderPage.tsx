@@ -39,7 +39,7 @@ export default function OrderPage({ setCurrentPage, user, onLogout }: any) {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#050507] text-gray-200">
+    <div className="flex min-h-screen bg-[#151521] text-gray-200">
       <Sidebar currentPage="orders" setCurrentPage={setCurrentPage} />
       
       <main className="flex-1 p-8 overflow-y-auto max-w-[1750px] mx-auto w-full">
@@ -52,35 +52,35 @@ export default function OrderPage({ setCurrentPage, user, onLogout }: any) {
           <OrderOrbiter title="Terminated Nodes" value={stats?.cancelled || "0"} color="#F43F5E" icon={<XCircle size={24}/>} />
         </div>
 
-        <div className="bg-[#0D0D12] border border-white/5 rounded-[3.5rem] p-6 mb-8 shadow-2xl flex items-center gap-6">
+        <div className="bg-[#20202A] border border-white/5 rounded-2xl p-4 mb-8 flex flex-wrap items-center gap-4 shadow-lg backdrop-blur-md">
             <div className="flex-1 relative group">
                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={20} />
-                <input type="text" placeholder="Search Entity or Transaction ID..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-black/40 border border-white/5 rounded-[2rem] pl-16 pr-8 py-5 text-sm text-white focus:outline-none focus:border-indigo-500/50 [color-scheme:dark]" />
+                <input type="text" placeholder="Search Entity or Transaction ID..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-[#151521]/60 border border-white/5 rounded-xl pl-16 pr-8 py-4 text-sm text-white focus:outline-none focus:border-indigo-500/50 [color-scheme:dark]" />
             </div>
-            <div className="h-10 w-px bg-white/5"></div>
-            <div className="flex items-center gap-2 p-1.5 bg-black/40 rounded-[2rem] border border-white/5">
+            <div className="h-10 w-px bg-white/10 hidden md:block"></div>
+            <div className="flex items-center gap-2 p-1.5 bg-[#151521]/60 rounded-xl border border-white/5">
                 {['all', 'pending', 'shipped', 'cancelled'].map((status: string) => (
-                    <button key={status} onClick={() => setStatusFilter(status)} className={`px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${statusFilter === status ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-gray-500 hover:text-white'}`}>{status}</button>
+                    <button key={status} onClick={() => setStatusFilter(status)} className={`px-6 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === status ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-gray-500 hover:text-white'}`}>{status}</button>
                 ))}
             </div>
-            <button onClick={() => setShowAdvancedFilters(!showAdvancedFilters)} className={`p-5 rounded-[2rem] transition-all border ${showAdvancedFilters ? 'bg-white text-black border-white' : 'bg-white/[0.03] border-white/10 text-gray-300 hover:bg-white/5'}`}><Filter size={20} /></button>
+            <button onClick={() => setShowAdvancedFilters(!showAdvancedFilters)} className={`p-4 rounded-xl transition-all border ${showAdvancedFilters ? 'bg-white text-black border-white' : 'bg-white/[0.03] border-white/10 text-gray-300 hover:bg-white/5'}`}><Filter size={20} /></button>
         </div>
 
         {showAdvancedFilters && (
-            <div className="bg-[#0D0D12] border border-white/5 rounded-[3.5rem] p-10 mb-8 shadow-2xl animate-in zoom-in duration-300">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-                    <div className="space-y-4"><label className="text-xs font-black text-gray-500 uppercase tracking-widest ml-1">Registry Start</label><div className="relative group"><Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600" size={18} /><input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full bg-black/40 border border-white/5 rounded-2xl pl-14 pr-6 py-4 text-xs text-white focus:outline-none [color-scheme:dark]" /></div></div>
-                    <div className="space-y-4"><label className="text-xs font-black text-gray-500 uppercase tracking-widest ml-1">Registry End</label><div className="relative group"><Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600" size={18} /><input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-black/40 border border-white/5 rounded-2xl pl-14 pr-6 py-4 text-xs text-white focus:outline-none [color-scheme:dark]" /></div></div>
-                    <div className="space-y-4"><label className="text-xs font-black text-gray-500 uppercase tracking-widest ml-1">Threshold Min ($)</label><div className="relative group"><DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600" size={18} /><input type="number" placeholder="0.00" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-full bg-black/40 border border-white/5 rounded-2xl pl-14 pr-6 py-4 text-xs text-white focus:outline-none" /></div></div>
-                    <div className="space-y-4"><label className="text-xs font-black text-gray-500 uppercase tracking-widest ml-1">Threshold Max ($)</label><div className="relative group"><DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600" size={18} /><input type="number" placeholder="9999.99" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="w-full bg-black/40 border border-white/5 rounded-2xl pl-14 pr-6 py-4 text-xs text-white focus:outline-none" /></div></div>
+            <div className="bg-[#20202A] border border-white/5 rounded-2xl p-8 mb-8 shadow-lg animate-in zoom-in duration-300">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="space-y-4"><label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Registry Start</label><div className="relative group"><Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600" size={18} /><input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full bg-[#151521]/60 border border-white/5 rounded-xl pl-14 pr-6 py-3.5 text-xs text-white focus:outline-none [color-scheme:dark]" /></div></div>
+                    <div className="space-y-4"><label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Registry End</label><div className="relative group"><Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600" size={18} /><input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-[#151521]/60 border border-white/5 rounded-xl pl-14 pr-6 py-3.5 text-xs text-white focus:outline-none [color-scheme:dark]" /></div></div>
+                    <div className="space-y-4"><label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Threshold Min ($)</label><div className="relative group"><DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600" size={18} /><input type="number" placeholder="0.00" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-full bg-[#151521]/60 border border-white/5 rounded-xl pl-14 pr-6 py-3.5 text-xs text-white focus:outline-none" /></div></div>
+                    <div className="space-y-4"><label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Threshold Max ($)</label><div className="relative group"><DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600" size={18} /><input type="number" placeholder="9999.99" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="w-full bg-[#151521]/60 border border-white/5 rounded-xl pl-14 pr-6 py-3.5 text-xs text-white focus:outline-none" /></div></div>
                 </div>
-                <div className="flex justify-end gap-4 mt-10 pt-8 border-t border-white/5"><button onClick={clearAllFilters} className="px-8 py-4 rounded-2xl border border-white/10 text-gray-500 font-black text-xs uppercase hover:bg-white/5 transition-all">Reset All Parameters</button><button onClick={() => setShowAdvancedFilters(false)} className="px-10 py-4 rounded-2xl bg-indigo-600 text-white font-black text-xs uppercase shadow-lg shadow-indigo-600/30">Apply Filter Map</button></div>
+                <div className="flex justify-end gap-4 mt-8 pt-8 border-t border-white/5"><button onClick={clearAllFilters} className="px-8 py-3.5 rounded-xl border border-white/10 text-gray-500 font-black text-[10px] uppercase hover:bg-white/5 transition-all">Reset All</button><button onClick={() => setShowAdvancedFilters(false)} className="px-10 py-3.5 rounded-xl bg-indigo-600 text-white font-black text-[10px] uppercase shadow-lg shadow-indigo-600/30">Apply Filter</button></div>
             </div>
         )}
 
-        <div className="bg-[#0D0D12] border border-white/5 rounded-[3.5rem] overflow-hidden shadow-2xl">
-          <div className="p-10 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
-            <h3 className="text-base font-black text-white uppercase tracking-[0.2em]">Transaction Ledger Stream</h3>
+        <div className="bg-[#20202A] border border-white/5 rounded-2xl overflow-hidden shadow-lg">
+          <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+            <h3 className="text-sm font-black text-white uppercase tracking-[0.2em]">Transaction Ledger Stream</h3>
             <Zap size={24} className="text-indigo-500" />
           </div>
           <div className="overflow-x-auto">
@@ -171,15 +171,18 @@ export default function OrderPage({ setCurrentPage, user, onLogout }: any) {
 }
 
 const OrderOrbiter = ({ title, value, color, icon }: any) => (
-  <div className={`bg-[#0D0D12] border border-white/5 p-10 rounded-[3rem] shadow-2xl flex flex-col justify-between h-52 group relative overflow-hidden transition-all duration-500 hover:border-white/10`}>
-    <div className="absolute top-0 right-0 w-32 h-32 blur-[80px] -z-10 group-hover:opacity-100 opacity-30 transition-opacity" style={{backgroundColor: `${color}20`}}></div>
-    <div className="flex justify-between items-start">
-        <div className="p-5 bg-white/5 rounded-2xl text-gray-400 group-hover:text-white transition-all shadow-inner border border-white/5" style={{color: color}}>{icon}</div>
-        <ArrowUpRight size={20} className="text-gray-700 group-hover:text-white transition-all" />
+  <div className="relative group p-8 rounded-[2rem] bg-[#20202A]/40 border border-white/5 shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-500 hover:border-white/10">
+    {/* Pulsing background glow */}
+    <div className="absolute top-0 right-0 w-32 h-32 blur-[80px] -z-10 group-hover:opacity-100 opacity-20 transition-opacity duration-700" style={{backgroundColor: color}}></div>
+    
+    <div className="flex justify-between items-start mb-6">
+      <div className="p-4 bg-white/5 rounded-2xl text-gray-400 group-hover:text-white transition-all shadow-inner border border-white/5" style={{color: color}}>{icon}</div>
+      <ArrowUpRight size={20} className="text-gray-700 group-hover:text-white transition-all" />
     </div>
+    
     <div>
-        <p className="text-xs font-black text-gray-600 uppercase tracking-widest mb-1">{title}</p>
-        <h4 className="text-4xl font-black text-white tracking-tighter leading-none">{value}</h4>
+      <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] mb-2">{title}</p>
+      <h4 className="text-3xl font-black text-white tracking-tighter leading-none">{value}</h4>
     </div>
   </div>
 );

@@ -9,6 +9,7 @@ interface HeaderProps {
     subtitle: string;
     accentColor?: string;
     statusLabel?: string;
+    hideSubtitle?: boolean;
 }
 
 // ✅ Static lookup map so Tailwind never purges these classes
@@ -77,7 +78,7 @@ const accentMap: Record<string, {
 // Fallback to indigo if accentColor is not in the map
 const getAccent = (color: string) => accentMap[color] ?? accentMap['indigo-500'];
 
-export default function Header({ user, onLogout, title, subtitle, accentColor = "indigo-500", statusLabel = "System Live" }: HeaderProps) {
+export default function Header({ user, onLogout, title, subtitle, accentColor = "indigo-500", statusLabel = "System Live", hideSubtitle = false }: HeaderProps) {
     const [showProfile, setShowProfile] = useState(false);
     const [showLogout, setShowLogout] = useState(false);
 
@@ -97,7 +98,7 @@ export default function Header({ user, onLogout, title, subtitle, accentColor = 
                     <h2 className="text-4xl font-black text-white tracking-tighter uppercase">
                         {titleFirst} <span className={accent.text}>{titleRest}</span>
                     </h2>
-                    <p className="text-xs text-gray-600 font-bold uppercase tracking-widest mt-1">{subtitle}</p>
+                    {!hideSubtitle && <p className="text-xs text-gray-600 font-bold uppercase tracking-widest mt-1">{subtitle}</p>}
                 </div>
 
                 <div className="flex items-center gap-6 bg-white/[0.03] border border-white/[0.05] p-2 pr-6 rounded-2xl backdrop-blur-md">

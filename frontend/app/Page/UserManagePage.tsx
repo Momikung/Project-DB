@@ -72,22 +72,10 @@ export default function UserPage({ setCurrentPage, user, onLogout }: any) {
         <Header user={user} onLogout={onLogout} title="USER MANAGEMENT" subtitle="" hideSubtitle />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10 mt-6">
-          <div className="bg-[#a2688b] p-6 rounded-xl flex items-center gap-4 text-white shadow">
-            <div className="bg-white/20 p-3 rounded-lg"><Users size={24} /></div>
-            <div><p className="text-sm font-semibold opacity-80">Total Users</p><p className="text-xl font-bold">{stats?.total || "332"}</p></div>
-          </div>
-          <div className="bg-[#3b7145] p-6 rounded-xl flex items-center gap-4 text-white shadow">
-            <div className="bg-white/20 p-3 rounded-lg"><Globe size={24} /></div>
-            <div><p className="text-sm font-semibold opacity-80">Online Shop</p><p className="text-xl font-bold">{stats?.active || "45"}</p></div>
-          </div>
-          <div className="bg-[#9c6a6a] p-6 rounded-xl flex items-center gap-4 text-white shadow">
-            <div className="bg-white/20 p-3 rounded-lg"><ShieldAlert size={24} /></div>
-            <div><p className="text-sm font-semibold opacity-80">Report Users</p><p className="text-xl font-bold">{stats?.reported || "80"}</p></div>
-          </div>
-          <div className="bg-[#245b8e] p-6 rounded-xl flex items-center gap-4 text-white shadow">
-            <div className="bg-white/20 p-3 rounded-lg"><UserPlus size={24} /></div>
-            <div><p className="text-sm font-semibold opacity-80">New Signup</p><p className="text-xl font-bold">{stats?.new || "10"}</p></div>
-          </div>
+          <UserOrbiter title="Total Population" value={stats?.total || "332"} color="#6366F1" icon={<Users size={24}/>} />
+          <UserOrbiter title="Neural Hub Nodes" value={stats?.active || "45"} color="#10B981" icon={<Globe size={24}/>} />
+          <UserOrbiter title="Anomaly Reports" value={stats?.reported || "80"} color="#EF4444" icon={<ShieldAlert size={24}/>} />
+          <UserOrbiter title="New Syncs" value={stats?.new || "10"} color="#F59E0B" icon={<UserPlus size={24}/>} />
         </div>
 
         <div className="bg-[#20202A] border border-white/5 rounded-2xl overflow-hidden shadow-lg">
@@ -241,3 +229,20 @@ export default function UserPage({ setCurrentPage, user, onLogout }: any) {
     </div>
   );
 }
+
+const UserOrbiter = ({ title, value, color, icon }: any) => (
+  <div className="relative group p-8 rounded-[2rem] bg-[#20202A]/40 border border-white/5 shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-500 hover:border-white/10">
+    {/* Pulsing background glow */}
+    <div className="absolute top-0 right-0 w-32 h-32 blur-[80px] -z-10 group-hover:opacity-100 opacity-20 transition-opacity duration-700" style={{backgroundColor: color}}></div>
+    
+    <div className="flex justify-between items-start mb-6">
+      <div className="p-4 bg-white/5 rounded-2xl text-gray-400 group-hover:text-white transition-all shadow-inner border border-white/5" style={{color: color}}>{icon}</div>
+      <ArrowUpRight size={20} className="text-gray-700 group-hover:text-white transition-all" />
+    </div>
+    
+    <div>
+      <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] mb-2">{title}</p>
+      <h4 className="text-3xl font-black text-white tracking-tighter leading-none">{value}</h4>
+    </div>
+  </div>
+);

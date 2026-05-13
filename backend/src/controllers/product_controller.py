@@ -3,6 +3,8 @@ from src.init import get_db_connection
 from psycopg2.extras import RealDictCursor
 import traceback
 
+from src.queries import product_queries
+
 def get_all_products():
     conn = None
     try:
@@ -10,28 +12,14 @@ def get_all_products():
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
         # Auto-migrate user_id column
-        cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='products' AND column_name='user_id'")
+        cursor.execute(product_queries.CHECK_USER_ID_COLUMN)
         if not cursor.fetchone():
-            cursor.execute("ALTER TABLE products ADD COLUMN user_id INTEGER")
-            cursor.execute("UPDATE products SET user_id = (SELECT user_id FROM users ORDER BY RANDOM() LIMIT 1)")
+            cursor.execute(product_queries.ADD_USER_ID_COLUMN)
+            cursor.execute(product_queries.SEED_USER_ID_COLUMN)
             conn.commit()
 
         # ดึงรายการสินค้าพร้อมหมวดหมู่และราคาล่าสุด
-        query = """
-            SELECT 
-                p.product_id as id, 
-                p.product_name as name, 
-                c.category_name as category, 
-                pv.price, 
-                p.updated_at as updateat,
-                p.user_id
-            FROM products p
-            LEFT JOIN categories c ON p.category_id = c.category_id
-            LEFT JOIN product_variants pv ON p.product_id = pv.product_id
-            WHERE p.deleted_at IS NULL
-            ORDER BY p.product_id ASC
-        """
-        cursor.execute(query)
+        cursor.execute(product_queries.ALL_PRODUCTS)
         products = cursor.fetchall()
 
         cursor.close()
@@ -64,21 +52,21 @@ def create_product():
         cursor = conn.cursor()
         
         # 1. Check/Insert category
-        cursor.execute("SELECT category_id FROM categories WHERE category_name = %s", (category,))
+        cursor.execute(product_queries.GET_CATEGORY_ID, (category,))
         cat_row = cursor.fetchone()
         if cat_row:
             cat_id = cat_row[0]
         else:
-            cursor.execute("INSERT INTO categories (category_name) VALUES (%s) RETURNING category_id", (category,))
+            cursor.execute(product_queries.INSERT_CATEGORY, (category,))
             cat_id = cursor.fetchone()[0]
 
         # 2. Insert product
-        cursor.execute("INSERT INTO products (product_name, category_id, user_id) VALUES (%s, %s, %s) RETURNING product_id", (name, cat_id, user_id))
+        cursor.execute(product_queries.INSERT_PRODUCT, (name, cat_id, user_id))
         product_id = cursor.fetchone()[0]
 
         # 3. Insert variant with price
         sku = f"SKU-{product_id}-01"
-        cursor.execute("INSERT INTO product_variants (product_id, sku, price, stock_qty) VALUES (%s, %s, %s, %s)", (product_id, sku, price, 0))
+        cursor.execute(product_queries.INSERT_VARIANT, (product_id, sku, price, 0))
 
         conn.commit()
         cursor.close()
@@ -108,19 +96,19 @@ def update_product(product_id):
 
         # Update category if needed
         if category:
-            cursor.execute("SELECT category_id FROM categories WHERE category_name = %s", (category,))
+            cursor.execute(product_queries.GET_CATEGORY_ID, (category,))
             cat_row = cursor.fetchone()
             if cat_row:
                 cat_id = cat_row[0]
             else:
-                cursor.execute("INSERT INTO categories (category_name) VALUES (%s) RETURNING category_id", (category,))
+                cursor.execute(product_queries.INSERT_CATEGORY, (category,))
                 cat_id = cursor.fetchone()[0]
-            cursor.execute("UPDATE products SET product_name = %s, category_id = %s, user_id = %s, updated_at = NOW() WHERE product_id = %s", (name, cat_id, user_id, product_id))
+            cursor.execute(product_queries.UPDATE_PRODUCT_BASE, (name, cat_id, user_id, product_id))
         else:
-            cursor.execute("UPDATE products SET product_name = %s, user_id = %s, updated_at = NOW() WHERE product_id = %s", (name, user_id, product_id))
+            cursor.execute(product_queries.UPDATE_PRODUCT_NO_CAT, (name, user_id, product_id))
 
         if price is not None:
-            cursor.execute("UPDATE product_variants SET price = %s WHERE product_id = %s", (price, product_id))
+            cursor.execute(product_queries.UPDATE_VARIANT_PRICE, (price, product_id))
 
         conn.commit()
         cursor.close()

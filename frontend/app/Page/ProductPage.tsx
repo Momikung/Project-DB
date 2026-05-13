@@ -247,13 +247,18 @@ export default function ProductPage({ setCurrentPage, user, onLogout }: any) {
 }
 
 const ProductOrbiter = ({ title, value, color, icon }: any) => (
-  <div className={`bg-[#20202A] border border-white/5 p-8 rounded-2xl shadow-lg flex flex-col justify-between h-52 relative overflow-hidden transition-all duration-300 hover:border-white/10`}>
-    <div className="flex justify-between items-start">
-        <div className="p-4 bg-white/5 rounded-xl text-gray-400 border border-white/5" style={{color: color}}>{icon}</div>
+  <div className="relative group p-8 rounded-[2rem] bg-[#20202A]/40 border border-white/5 shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-500 hover:border-white/10">
+    {/* Pulsing background glow */}
+    <div className="absolute top-0 right-0 w-32 h-32 blur-[80px] -z-10 group-hover:opacity-100 opacity-20 transition-opacity duration-700" style={{backgroundColor: color}}></div>
+    
+    <div className="flex justify-between items-start mb-6">
+      <div className="p-4 bg-white/5 rounded-2xl text-gray-400 group-hover:text-white transition-all shadow-inner border border-white/5" style={{color: color}}>{icon}</div>
+      <ArrowUpRight size={20} className="text-gray-700 group-hover:text-white transition-all" />
     </div>
+    
     <div>
-        <p className="text-xs font-semibold text-gray-500 tracking-wider mb-2">{title}</p>
-        <h4 className="text-3xl font-bold text-white leading-none">{value}</h4>
+      <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] mb-2">{title}</p>
+      <h4 className="text-3xl font-black text-white tracking-tighter leading-none">{value}</h4>
     </div>
   </div>
 );

@@ -1,0 +1,171 @@
+# Report Queries
+TREND_MONTHLY = """
+    SELECT 
+        TO_CHAR(d, 'YYYY-MM-DD') as full_date,
+        TO_CHAR(d, 'Mon YY') as name,
+        COALESCE(SUM(o.total_price), 0) as revenue,
+        COUNT(DISTINCT o.order_id) as orders,
+        (SELECT COUNT(*) FROM users u WHERE DATE_TRUNC('month', u.created_at) = DATE_TRUNC('month', d)) as users
+    FROM generate_series(
+        DATE_TRUNC('year', NOW()) - INTERVAL '2 years',
+        DATE_TRUNC('year', NOW()) + INTERVAL '1 year',
+        INTERVAL '1 month'
+    ) d
+    LEFT JOIN orders o ON DATE_TRUNC('month', o.order_date) = d AND o.order_status::text != 'cancelled'
+    GROUP BY d
+    ORDER BY d
+"""
+
+TREND_DAILY = """
+    SELECT 
+        TO_CHAR(d, 'YYYY-MM-DD') as full_date,
+        TO_CHAR(d, 'DD Mon') as name,
+        COALESCE(SUM(o.total_price), 0) as revenue,
+        COUNT(DISTINCT o.order_id) as orders,
+        (SELECT COUNT(*) FROM users u WHERE DATE_TRUNC('day', u.created_at) = DATE_TRUNC('day', d)) as users
+    FROM generate_series(
+        DATE_TRUNC('day', NOW()) - INTERVAL '60 days',
+        DATE_TRUNC('day', NOW()),
+        INTERVAL '1 day'
+    ) d
+    LEFT JOIN orders o ON DATE_TRUNC('day', o.order_date) = d AND o.order_status::text != 'cancelled'
+    GROUP BY d
+    ORDER BY d
+"""
+
+GLOBAL_REVENUE = "SELECT COALESCE(SUM(total_price), 0) as total FROM orders WHERE order_status::text != 'cancelled'"
+TOTAL_ORDERS = "SELECT COUNT(*) as count FROM orders"
+TOTAL_USERS = "SELECT COUNT(*) as count FROM users"
+LOW_STOCK_COUNT = "SELECT COUNT(*) as count FROM product_variants WHERE stock_qty < 10"
+
+INVENTORY_STATUS = """
+    SELECT 
+        c.category_name as name,
+        COUNT(pv.variant_id) as total,
+        COUNT(CASE WHEN pv.stock_qty < 5 THEN 1 END) as short,
+        COUNT(CASE WHEN pv.stock_qty >= 5 AND pv.stock_qty < 15 THEN 1 END) as low
+    FROM categories c
+    LEFT JOIN products p ON c.category_id = p.category_id
+    LEFT JOIN product_variants pv ON p.product_id = pv.product_id
+    GROUP BY c.category_id, c.category_name
+    ORDER BY total DESC
+    LIMIT 8
+"""
+
+TOP_PERFORMING_PRODUCTS = """
+    SELECT 
+        p.product_name as name,
+        pv.price,
+        (pv.price * (10 + pv.variant_id % 50)) as total_revenue,
+        (5 + pv.variant_id % 20) as users
+    FROM products p
+    JOIN product_variants pv ON p.product_id = pv.product_id
+    ORDER BY total_revenue DESC
+    LIMIT 5
+"""
+
+FULFILMENT_DATA = """
+    SELECT 
+        EXTRACT(DAY FROM d)::integer as day,
+        COUNT(CASE WHEN DATE_TRUNC('month', o.order_date) = DATE_TRUNC('month', NOW()) AND o.order_status::text != 'cancelled' THEN o.order_id END) as this_month,
+        COUNT(CASE WHEN DATE_TRUNC('month', o.order_date) = DATE_TRUNC('month', NOW() - INTERVAL '1 month') AND o.order_status::text != 'cancelled' THEN o.order_id END) as last_month
+    FROM generate_series(
+        DATE_TRUNC('month', NOW()),
+        DATE_TRUNC('month', NOW()) + INTERVAL '1 month' - INTERVAL '1 day',
+        INTERVAL '1 day'
+    ) d
+    LEFT JOIN orders o ON EXTRACT(DAY FROM o.order_date) = EXTRACT(DAY FROM d)
+        AND o.order_date >= DATE_TRUNC('month', NOW() - INTERVAL '1 month')
+    GROUP BY EXTRACT(DAY FROM d)
+    ORDER BY day
+"""
+
+LEVEL_DATA = """
+    SELECT 
+        c.category_name as name,
+        COUNT(DISTINCT o.order_id) as volume,
+        COUNT(DISTINCT r.review_id) * 5 as service
+    FROM categories c
+    LEFT JOIN products p ON c.category_id = p.category_id
+    LEFT JOIN product_variants pv ON p.product_id = pv.product_id
+    LEFT JOIN order_items oi ON pv.variant_id = oi.variant_id
+    LEFT JOIN orders o ON oi.order_id = o.order_id
+    LEFT JOIN reviews r ON p.product_id = r.product_id AND r.rating >= 4
+    GROUP BY c.category_id, c.category_name
+    ORDER BY volume DESC
+    LIMIT 5
+"""
+
+# Order Queries
+ALL_ORDERS = """
+    SELECT 
+        order_id as id, 
+        shipping_name as customer, 
+        order_date as date, 
+        total_price as amount, 
+        order_status::text as status
+    FROM orders
+    ORDER BY order_date DESC
+    LIMIT 100
+"""
+
+ORDER_ITEMS_BY_IDS = """
+    SELECT 
+        oi.order_id, 
+        oi.product_name, 
+        oi.quantity, 
+        oi.unit_price
+    FROM order_items oi
+    WHERE oi.order_id IN %s
+"""
+
+ORDER_STATS_PENDING = "SELECT COUNT(*) as count FROM orders WHERE order_status::text = 'pending'"
+ORDER_STATS_SHIPPED = "SELECT COUNT(*) as count FROM orders WHERE order_status::text IN ('shipped', 'delivered')"
+ORDER_STATS_CANCELLED = "SELECT COUNT(*) as count FROM orders WHERE order_status::text = 'cancelled'"
+
+# Product Queries
+ALL_PRODUCTS = """
+    SELECT 
+        p.product_id as id, 
+        p.product_name as name, 
+        c.category_name as category, 
+        pv.price, 
+        p.updated_at as updateat,
+        p.user_id
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.category_id
+    LEFT JOIN product_variants pv ON p.product_id = pv.product_id
+    WHERE p.deleted_at IS NULL
+    ORDER BY p.product_id ASC
+"""
+
+CHECK_USER_ID_COLUMN = "SELECT column_name FROM information_schema.columns WHERE table_name='products' AND column_name='user_id'"
+ADD_USER_ID_COLUMN = "ALTER TABLE products ADD COLUMN user_id INTEGER"
+SEED_USER_ID_COLUMN = "UPDATE products SET user_id = (SELECT user_id FROM users ORDER BY RANDOM() LIMIT 1)"
+
+GET_CATEGORY_ID = "SELECT category_id FROM categories WHERE category_name = %s"
+INSERT_CATEGORY = "INSERT INTO categories (category_name) VALUES (%s) RETURNING category_id"
+INSERT_PRODUCT = "INSERT INTO products (product_name, category_id, user_id) VALUES (%s, %s, %s) RETURNING product_id"
+INSERT_VARIANT = "INSERT INTO product_variants (product_id, sku, price, stock_qty) VALUES (%s, %s, %s, %s)"
+
+UPDATE_PRODUCT_BASE = "UPDATE products SET product_name = %s, category_id = %s, user_id = %s, updated_at = NOW() WHERE product_id = %s"
+UPDATE_PRODUCT_NO_CAT = "UPDATE products SET product_name = %s, user_id = %s, updated_at = NOW() WHERE product_id = %s"
+UPDATE_VARIANT_PRICE = "UPDATE product_variants SET price = %s WHERE product_id = %s"
+
+# User Queries
+ALL_USERS_WITH_SPENT = """
+    SELECT 
+        u.user_id as id, 
+        CONCAT(u.first_name, ' ', u.last_name) as name, 
+        u.email, 
+        u.status::text as status,
+        COALESCE(SUM(o.total_price), 0) as total_spent
+    FROM users u
+    LEFT JOIN orders o ON u.user_id = o.user_id
+    WHERE u.deleted_at IS NULL
+    GROUP BY u.user_id, u.first_name, u.last_name, u.email, u.status
+    ORDER BY total_spent DESC
+"""
+
+TOTAL_USERS_ACTIVE = "SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL"
+ACTIVE_USERS_COUNT = "SELECT COUNT(*) as count FROM users WHERE status = 'active'"
